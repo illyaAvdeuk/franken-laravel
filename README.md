@@ -197,3 +197,18 @@ docker compose exec worker php /app/artisan queue:work --sleep=3 --tries=3
 docker compose logs -f app
 docker compose down --volumes --remove-orphans
 ```
+
+## Useful commands for coding inside app container
+
+```bash
+# PSR-12
+./vendor/bin/pint # Start formatting all code
+./vendor/bin/pint --test # check if code formatted, but do not change it yet
+./vendor/bin/pint --dirty # Format only changed files (git dirty)
+./vendor/bin/pint  --test  --preset psr12 # Using a specific preset (eg pure PSR-12)
+
+# Tests
+./artisan test
+# or
+./vendor/bin/pest --colors
+```

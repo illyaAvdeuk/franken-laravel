@@ -15,6 +15,9 @@ services:
     volumes:
       - ./src:/app:delegated
       - ./env:/app/.env:ro
+      - caddydata:/data   # Caddy server data, required for FrankenPHP 
+    environment:
+      - XDG_CONFIG_HOME=/home/appuser/.config  # base path for configuration
     depends_on:
       - db
       - redis
@@ -63,7 +66,9 @@ services:
     volumes:
       - ./src:/app:delegated
       - ./env:/app/.env:ro
+      - caddydata:/data
 
 volumes:
   dbdata:
   redisdata:
+  caddydata:
