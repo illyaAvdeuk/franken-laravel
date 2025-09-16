@@ -1,0 +1,133 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: mylab/laravel-frankenphp:latest
+    container_name: laravel_app
+    ports:
+      - "${APP_PORT:-8100}:80"
+      - "${XDEBUG_CLIENT_PORT:-9003}:9003"
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app:delegated
+      # - .env:/app/.env:ro
+      - caddydata:/data
+    environment:
+      - XDG_CONFIG_HOME=/home/appuser/.config
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+    networks:
+      - devnet
+
+  db:
+    image: postgres:15
+    container_name: pg_main
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${EXTERNAL_DB_PORT:-5457}:${DB_PORT:-5432}"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    networks:
+      - devnet
+
+  pgbouncer:
+    image: bitnami/pgbouncer:latest
+    container_name: pgbouncer
+    depends_on:
+      - db
+    ports:
+      - "${PGBOUNCER_LISTEN_PORT:-6432}:6432"
+    volumes:
+      - ./pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:ro
+    environment:
+      - DATABASE_URL=postgresql://${DB_USERNAME}:${DB_PASSWORD}@db:5432/${DB_DATABASE}
+    networks:
+      - devnet
+
+  redis:
+    image: redis:7
+    container_name: redis
+    command: redis-server --save 20 1 --loglevel warning
+    volumes:
+      - redisdata:/data
+    networks:
+      - devnet
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - devnet
+
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres_exporter
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${DB_USERNAME}:${DB_PASSWORD}@db:5432/${DB_DATABASE}?sslmode=disable
+    ports:
+      - "9187:9187"
+    networks:
+      - devnet
+    depends_on:
+      - db
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+    networks:
+      - devnet
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "${PROMETHEUS_PORT:-9091}:9090"
+    depends_on:
+      - postgres_exporter
+      - node_exporter
+    networks:
+      - devnet
+
+  grafana:
+    image: grafana/grafana:9.0.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - prometheus
+    networks:
+      - devnet
+
+volumes:
+  dbdata:
+  redisdata:
+  caddydata:
+
+networks:
+  devnet:
+    driver: bridge

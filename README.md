@@ -196,6 +196,8 @@ docker compose exec app php artisan migrate --force
 docker compose exec worker php /app/artisan queue:work --sleep=3 --tries=3
 docker compose logs -f app
 docker compose down --volumes --remove-orphans
+
+docker compose -f dev-compose.yml down && docker compose -f dev-compose.yml up -d
 ```
 
 ## Useful commands for coding inside app container
@@ -211,4 +213,24 @@ docker compose down --volumes --remove-orphans
 ./artisan test
 # or
 ./vendor/bin/pest --colors
+```
+
+## Useful commands for understanding load
+```bash
+### HTTP-benchmark
+wrk -t2 -c10 -d5s http://localhost:8100
+
+### alternative to wrk on Go
+hey -n 1000 -c 20 http://localhost:8100
+
+### pgbench — PostgreSQL load
+PGPASSWORD=secret pgbench -h localhost -p 5467 -U laravel -i laravel
+PGPASSWORD=secret pgbench -h localhost -p 5467 -U laravel -c 10 -j 2 -T 30 laravel
+
+
+### POstgres logs report example
+docker logs pg_main &> ~/franken-laravel/pg_container.log
+pgbadger ~/franken-laravel/pg_container.log -o ~/franken-laravel/pg_report.html
+# open report in browser
+xdg-open ~/franken-laravel/pg_report.html
 ```
