@@ -17,4 +17,4 @@ Route::get('/jobs/{id}', fn ($id) => view(
     'job', ['job' => Job::with('employer')->findOrFail($id)]
 ));
 
-Route::get('/ping', fn() => response('pong', 200));
+Route::get('/ping', fn () => response('pong', 200));

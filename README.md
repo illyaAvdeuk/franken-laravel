@@ -197,6 +197,10 @@ docker compose exec worker php /app/artisan queue:work --sleep=3 --tries=3
 docker compose logs -f app
 docker compose down --volumes --remove-orphans
 
+### nice table wiew
+docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+docker network inspect franken-laravel_default
+
 docker compose -f dev-compose.yml down && docker compose -f dev-compose.yml up -d
 ```
 
