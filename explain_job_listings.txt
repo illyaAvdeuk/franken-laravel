@@ -1,0 +1,12 @@
+                                                       QUERY PLAN                                                       
+------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.00..21.27 rows=1000 width=59) (actual time=0.010..0.231 rows=1000 loops=1)
+   Buffers: shared hit=12
+   ->  Seq Scan on job_listings  (cost=0.00..2127.00 rows=100000 width=59) (actual time=0.009..0.118 rows=1000 loops=1)
+         Buffers: shared hit=12
+ Planning:
+   Buffers: shared hit=96
+ Planning Time: 0.367 ms
+ Execution Time: 0.313 ms
+(8 rows)
+

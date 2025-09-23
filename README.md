@@ -202,6 +202,7 @@ docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
 docker network inspect franken-laravel_default
 
 docker compose -f dev-compose.yml down && docker compose -f dev-compose.yml up -d
+docker compose -f dev-compose.yml down
 ```
 
 ## Useful commands for coding inside app container
@@ -232,7 +233,7 @@ PGPASSWORD=secret pgbench -h localhost -p 5467 -U laravel -i laravel
 PGPASSWORD=secret pgbench -h localhost -p 5467 -U laravel -c 10 -j 2 -T 30 laravel
 
 
-### POstgres logs report example
+### Postgres logs report example
 docker logs pg_main &> ~/franken-laravel/pg_container.log
 pgbadger ~/franken-laravel/pg_container.log -o ~/franken-laravel/pg_report.html
 # open report in browser
